@@ -29,14 +29,16 @@ void str_concat(char* dest, char* source) {
 	for (int j = 0; source[j] != '\0'; j++, i++) {
 		dest[i] = source[j];
 	}
-	dest[i] = '\0';
+	dest[i] = '\n';
+	dest[i+1] = '\0';
 }
 
-void append_file(char* file, char* line) {
+void append_buffer(char* file, char* line) {
 	while (1) {
 		read_line(line);
-		if (str_len(line) == 1 && line[0] == '.')
+		if (str_len(line) == 1 && line[0] == '.') {
 			break;
+		}
 		str_concat(file, line);
 	}
 }
@@ -46,30 +48,44 @@ void print_buffer(char* buffer) {
 		return;
 	for (int i = 0; buffer[i] != '\0'; ++i)
 		printf("%c", buffer[i]);
-	printf("\n");
+}
+
+void write_file(char* file_name, char* file) {
+	FILE *fp = fopen(file_name, "w");
+	if (fp == NULL) {
+		printf("Could not read file");
+		exit(0);
+	}
+	fprintf(fp, "%s", file);
+	fclose(fp);
+}
+
+void read_file(char* file_name, char* file) {
+	FILE *fp = fopen(file_name, "r");
+	if (fp == NULL) {
+		printf("Could not read file");
+		exit(0);
+	}
+	int c, i = 0;
+	while ((c = fgetc(fp)) != EOF) {
+		file[i++] = c;
+	}
+	fclose(fp);
 }
 
 int main(int argc, char* argv[]) {
 	char* line = malloc(BUF_SIZE);
 	char* file = malloc(BUF_SIZE);
+	char* file_name = NULL;
 
 	if (argc > 2) {
 		printf("Multiple arguments passed, please only enter one file name...");
 		exit(1);
 	}
 	if (argc == 2) {
-		// TODO: This should be a separate function
-		// Read existing file
-		FILE *fp = fopen(argv[1], "r");
-		if (fp == NULL) {
-			printf("Could not read file");
-			return 0;
-		}
-		int c, i = 0;
-		while ((c = fgetc(fp)) != EOF) {
-			file[i++] = c;
-		}
-		fclose(fp);
+		file_name = malloc(64);
+		file_name = argv[1];
+		read_file(file_name, file);
 	}
 
 	if (line == NULL || file == NULL) {
@@ -87,7 +103,10 @@ int main(int argc, char* argv[]) {
 				case 'q':
 					exit(0);
 				case 'a':
-					append_file(file, line);
+					append_buffer(file, line);
+					break;
+				case 'w':
+					write_file(file_name, file);
 					break;
 				case 'p':
 					print_buffer(file);
@@ -103,5 +122,6 @@ int main(int argc, char* argv[]) {
 
 	free(line);
 	free(file);
+	free(file_name);
 	return 0;
 }
