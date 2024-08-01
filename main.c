@@ -50,6 +50,20 @@ void print_buffer(char* buffer) {
 		printf("%c", buffer[i]);
 }
 
+void print_line(char* buffer, unsigned int line_number) {
+	if (buffer == NULL || str_len(buffer) == 0)
+		return;
+	unsigned int current_line = 1;
+	for (int i = 0; buffer[i] != '\0'; ++i) {
+		if (current_line == line_number)
+			printf("%c", buffer[i]);
+		if (current_line > line_number)
+			return;
+		if (buffer[i] == '\n')
+			current_line++;
+	}
+}
+
 void write_file(char* file_name, char* file) {
 	FILE *fp = fopen(file_name, "w");
 	if (fp == NULL) {
@@ -60,7 +74,8 @@ void write_file(char* file_name, char* file) {
 	fclose(fp);
 }
 
-void read_file(char* file_name, char* file) {
+unsigned int read_file(char* file_name, char* file) {
+	unsigned int last_line = 0;
 	FILE *fp = fopen(file_name, "r");
 	if (fp == NULL) {
 		printf("Could not read file");
@@ -68,15 +83,19 @@ void read_file(char* file_name, char* file) {
 	}
 	int c, i = 0;
 	while ((c = fgetc(fp)) != EOF) {
+		if (c == '\n')
+			last_line++;
 		file[i++] = c;
 	}
 	fclose(fp);
+	return last_line;
 }
 
 int main(int argc, char* argv[]) {
 	char* line = malloc(BUF_SIZE);
 	char* file = malloc(BUF_SIZE);
 	char* file_name = NULL;
+	unsigned int current_line = 1;
 
 	if (argc > 2) {
 		printf("Multiple arguments passed, please only enter one file name...");
@@ -85,7 +104,7 @@ int main(int argc, char* argv[]) {
 	if (argc == 2) {
 		file_name = malloc(64);
 		file_name = argv[1];
-		read_file(file_name, file);
+		current_line = read_file(file_name, file);
 	}
 
 	if (line == NULL || file == NULL) {
@@ -109,6 +128,9 @@ int main(int argc, char* argv[]) {
 					write_file(file_name, file);
 					break;
 				case 'p':
+					print_line(file, current_line);
+					break;
+				case 'P':
 					print_buffer(file);
 					break;
 				default:
