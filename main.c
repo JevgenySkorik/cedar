@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define BUF_SIZE 1024
 
@@ -43,14 +44,25 @@ void append_buffer(char* file, char* line) {
 	}
 }
 
-void print_buffer(char* buffer) {
+void print_buffer(char* buffer, bool print_line_numbers) {
 	if (buffer == NULL || str_len(buffer) == 0)
 		return;
-	for (int i = 0; buffer[i] != '\0'; ++i)
-		printf("%c", buffer[i]);
+	if (print_line_numbers) {
+		int l = 1;
+		printf("%d ", l++);
+		for (int i = 0; buffer[i] != '\0'; ++i) {
+			if (buffer[i] == '\n' && buffer[i+1] != '\0')
+				printf("\n%d ", l++);
+			else
+				printf("%c", buffer[i]);
+		}
+	}
+	else
+		for (int i = 0; buffer[i] != '\0'; ++i)
+			printf("%c", buffer[i]);
 }
 
-void print_line(char* buffer, unsigned int line_number) {
+void print_line(char* buffer, unsigned int line_number, bool print_line_numbers) {
 	if (buffer == NULL || str_len(buffer) == 0)
 		return;
 	unsigned int current_line = 1;
@@ -59,8 +71,11 @@ void print_line(char* buffer, unsigned int line_number) {
 			printf("%c", buffer[i]);
 		if (current_line > line_number)
 			return;
-		if (buffer[i] == '\n')
+		if (buffer[i] == '\n') {
 			current_line++;
+			if (current_line == line_number && print_line_numbers)
+				printf("%d ", line_number);
+		}
 	}
 }
 
@@ -128,10 +143,16 @@ int main(int argc, char* argv[]) {
 					write_file(file_name, file);
 					break;
 				case 'p':
-					print_line(file, current_line);
+					print_line(file, current_line, false);
 					break;
 				case 'P':
-					print_buffer(file);
+					print_buffer(file, false);
+					break;
+				case 'n':
+					print_line(file, current_line, true);
+					break;
+				case 'N':
+					print_buffer(file, true);
 					break;
 				default:
 					printf("Unknown command\n");
