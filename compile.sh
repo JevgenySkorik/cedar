@@ -1,2 +1,2 @@
 #!/bin/bash
-gcc -Wall main.c -o edim
+gcc -Wall main.c -o ced
