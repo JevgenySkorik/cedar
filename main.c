@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define BUF_SIZE 1024
 
@@ -42,6 +43,30 @@ void append_buffer(char* file, char* line) {
 		}
 		str_concat(file, line);
 	}
+}
+
+void change_line(char* line, int current_line, char* file) {
+	char* temp = malloc(BUF_SIZE);
+	int l = 1;
+	int t = 0;
+	bool line_changed = 0;
+	for (int i = 0; file[i] != '\0'; ++i) {
+		if (l == current_line && !line_changed) {
+			int j, n; 
+			for (j = 0; line[j] != '\0'; ++j)
+				temp[t+j] = line[j];
+			for (n = i; file[n+1] != '\n'; ++n);
+			i = n;
+			t += j;
+			line_changed = 1;
+			continue;
+		}
+		temp[t++] = file[i];
+		if (file[i] == '\n' && file[i+1] != '\0')
+			l++;
+	}
+	strcpy(file, temp);
+	free(temp);
 }
 
 void print_buffer(char* buffer, bool print_line_numbers) {
@@ -153,6 +178,10 @@ int main(int argc, char* argv[]) {
 					break;
 				case 'N':
 					print_buffer(file, true);
+					break;
+				case 'c':
+					read_line(line);
+					change_line(line, current_line, file);
 					break;
 				default:
 					printf("Unknown command\n");
