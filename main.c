@@ -131,6 +131,52 @@ unsigned int read_file(char* file_name, char* file) {
 	return last_line;
 }
 
+bool char_is_number(char c) {
+	if (c > 47 && c < 58)
+		return true;
+	return false; 
+}
+
+unsigned int line_count(char* buffer) {
+	unsigned int l = 1;
+	for (int i = 0; buffer[i] != '\0'; i++)
+		if (buffer[i] == '\n')
+			l++;
+	return l;
+}
+
+bool line_is_number(char* line) {
+	if (line[0] == '\0')
+		return false;
+	// line number
+	for (int n = 0; line[n] != '\0'; n++) {
+		if (!char_is_number(line[n]))
+			return false;
+	}
+	return true;
+}
+
+bool line_is_change_current_line(char* line) {
+	// check for +/- line
+	for (int n = 0; line[n] != '\0'; n++) {
+		if (line[0] == '+' || line[0] == '-') {
+			for (int i = 1; line[i] != '\0'; i++) {
+				if (!char_is_number(line[i]))
+					return false;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void change_current_line(char* line, unsigned int* current_line) {
+	if (line[0] == '+') {
+
+	}
+}
+
+
 int main(int argc, char* argv[]) {
 	char* line = malloc(BUF_SIZE);
 	char* file = malloc(BUF_SIZE);
@@ -157,7 +203,7 @@ int main(int argc, char* argv[]) {
 		read_line(line);
 
 		// Check if input is a command
-		if (str_len(line) == 1 && line[0] != ' ') {
+		if (str_len(line) == 1 && line[0] != ' ' && !char_is_number(line[0])) {
 			switch (line[0]) {
 				case 'q':
 					exit(0);
@@ -188,6 +234,18 @@ int main(int argc, char* argv[]) {
 					break;
 			}
 		}
+		else if (line_is_number(line)) {
+			unsigned int user_entered_line = atoi(line);
+			if (user_entered_line > 0 && user_entered_line < line_count(file))
+				current_line = user_entered_line;
+			else
+				printf("Unknown command\n");
+		}
+		//else if (line_is_change_current_line(line)) {
+			//printf("old current_line: %d\n", current_line);
+			//change_current_line(line, &current_line);
+			//printf("new current_line: %d\n", current_line);
+		//}
 		else
 			printf("Unknown command\n");
 	}
