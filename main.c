@@ -148,7 +148,6 @@ unsigned int line_count(char* buffer) {
 bool line_is_number(char* line) {
 	if (line[0] == '\0')
 		return false;
-	// line number
 	for (int n = 0; line[n] != '\0'; n++) {
 		if (!char_is_number(line[n]))
 			return false;
@@ -176,6 +175,27 @@ void change_current_line(char* line, unsigned int* current_line) {
 	}
 }
 
+void delete_line(char* file, unsigned int* current_line) {
+	char* temp = malloc(BUF_SIZE);
+	int l = 1;
+	int t = 0;
+	bool line_deleted = 0;
+	for (int i = 0; file[i] != '\0'; ++i) {
+		if (l == *current_line && !line_deleted) {
+			if (file[i] == '\n' || file[i] == '\0') {
+				line_deleted = true;
+				l++;
+			}
+			continue;
+		}
+		temp[t++] = file[i];
+		if (file[i] == '\n' && file[i+1] != '\0')
+			l++;
+	}
+	strcpy(file, temp);
+	free(temp);
+
+}
 
 int main(int argc, char* argv[]) {
 	char* line = malloc(BUF_SIZE);
@@ -199,6 +219,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	while(1) {
+		printf("current: %d, real: %d\n", current_line, line_count(file));
+		if (current_line > line_count(file))
+			current_line = line_count(file);
 		printf(">");
 		read_line(line);
 
@@ -228,6 +251,9 @@ int main(int argc, char* argv[]) {
 				case 'c':
 					read_line(line);
 					change_line(line, current_line, file);
+					break;
+				case 'd':
+					delete_line(file, &current_line);
 					break;
 				default:
 					printf("Unknown command\n");
